@@ -1,7 +1,22 @@
-import { env } from "~/env";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";
 
-const client = postgres(env.DATABASE_URL, { ssl: true });
+import { env } from "~/env";
 
-export const db = drizzle(client);
+/**
+ * HMR-safe singleton connection. In development every module reload would
+ * otherwise spin up a new postgres client with its own pool, exhausting the
+ * database's `max_connections`. Pinning the client on `globalThis` lets HMR
+ * reuse it.
+ *
+ * SSL is driven by the `sslmode` parameter in `DATABASE_URL`
+ * (e.g. `?sslmode=require` for managed databases, `?sslmode=disable` locally).
+ */
+const globalForDb = globalThis as unknown as {
+  conn: ReturnType<typeof postgres> | undefined;
+};
+
+const conn = globalForDb.conn ?? postgres(env.DATABASE_URL);
+if (env.NODE_ENV !== "production") globalForDb.conn = conn;
+
+export const db = drizzle(conn);
