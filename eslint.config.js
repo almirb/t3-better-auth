@@ -1,17 +1,18 @@
-import { FlatCompat } from "@eslint/eslintrc";
 import tseslint from "typescript-eslint";
+import nextCoreWebVitals from "eslint-config-next/core-web-vitals";
 // @ts-ignore -- no types for this plugin
 import drizzle from "eslint-plugin-drizzle";
 
-const compat = new FlatCompat({
-  baseDirectory: import.meta.dirname,
-});
-
 export default tseslint.config(
   {
-    ignores: [".next", "src/components/ui/**"],
+    ignores: [
+      ".next",
+      "src/components/ui/**",
+      "postcss.config.js",
+      "prettier.config.js",
+    ],
   },
-  ...compat.extends("next/core-web-vitals"),
+  ...nextCoreWebVitals,
   {
     files: ["**/*.ts", "**/*.tsx"],
     plugins: {
